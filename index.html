@@ -3,547 +3,284 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Fuel Entries Viewer</title>
-    <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
-    <link rel="icon" type="image/png" sizes="16x16" href="favicon-16x16.png">
+    <title>Fuel Purchase Form</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        body {
-            font-family: 'Inter', sans-serif;
-        }
-        .loader {
-            border: 4px solid #f3f3f3;
-            border-radius: 50%;
-            border-top: 4px solid #3498db;
-            width: 40px;
-            height: 40px;
-            animation: spin 1s linear infinite;
-        }
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-        ::-webkit-scrollbar {
-            width: 8px;
-        }
-        ::-webkit-scrollbar-track {
-            background: #f1f1f1;
-        }
-        ::-webkit-scrollbar-thumb {
-            background: #888;
-            border-radius: 4px;
-        }
-        ::-webkit-scrollbar-thumb:hover {
-            background: #555;
-        }
-        .rotate-90 {
-            transform: rotate(90deg);
-        }
-
-        .details-container {
-            max-height: 0;
-            overflow: hidden;
-            transition: max-height 0.5s ease-in-out;
-        }
-
-        .details-container.expanded {
-            max-height: 1000px; /* Adjust as needed, large enough for content */
-        }
-        
-        /* New, simplified print styles */
-        @media screen {
-            #print-container {
-                display: none;
-            }
-        }
-
-        @media print {
-            /* Hide every direct child of the body except for the print container */
-            body > *:not(#print-container) {
-                display: none !important;
-            }
-
-            /* Ensure the print container and its contents are visible */
-            #print-container, #print-container * {
-                visibility: visible;
-            }
-            #print-container {
-                position: absolute;
-                left: 0;
-                top: 0;
-                width: 100%;
-            }
-
-            /* Control page breaks between entries */
-            .print-entry {
-                page-break-inside: avoid;
-            }
-            .print-entry + .print-entry {
-                page-break-before: always;
-            }
-            .printable-receipt-image {
-                max-height: 40vh !important;
-                width: auto;
-                max-width: 100%;
-            }
-        }
+        body { font-family: 'Inter', sans-serif; }
     </style>
 </head>
 <body class="bg-gray-100 text-gray-800">
 
-    <div class="container mx-auto p-4 sm:p-6 lg:p-8">
-        <header class="text-center mb-8">
-            <h1 class="text-3xl sm:text-4xl font-bold text-gray-900">Fuel Entries Viewer</h1>
+    <div class="container mx-auto p-4 max-w-2xl">
+        <header class="text-center mb-6">
+            <h1 class="text-2xl md:text-3xl font-bold text-gray-900">Springfield Township Fire/EMS</h1>
+            <p class="text-lg md:text-xl text-gray-700">Fuel Purchase Tracking Sheet</p>
         </header>
 
-        <main class="bg-white rounded-xl shadow-lg p-6">
-            <div class="flex flex-col sm:flex-row justify-between items-center mb-6 gap-4">
-                <div class="flex flex-col sm:flex-row items-center gap-4">
-                    <div class="relative w-full sm:w-auto">
-                        <input type="text" id="searchInput" placeholder="Search entries..." class="w-full p-3 pl-10 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-shadow">
-                        <svg class="w-5 h-5 text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
-                        </svg>
-                    </div>
-                    <div class="flex items-center gap-2">
-                        <select id="monthFilter" class="p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-shadow bg-white">
-                            <option value="">All Months</option>
-                            <option value="0">January</option>
-                            <option value="1">February</option>
-                            <option value="2">March</option>
-                            <option value="3">April</option>
-                            <option value="4">May</option>
-                            <option value="5">June</option>
-                            <option value="6">July</option>
-                            <option value="7">August</option>
-                            <option value="8">September</option>
-                            <option value="9">October</option>
-                            <option value="10">November</option>
-                            <option value="11">December</option>
-                        </select>
-                        <select id="yearFilter" class="p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-shadow bg-white">
-                            <option value="">All Years</option>
-                        </select>
-                    </div>
-                </div>
-                <div class="flex items-center gap-4">
-                     <p id="entryCount" class="text-gray-600 font-medium"></p>
-                     <button id="generateReportBtn" disabled class="px-4 py-2 bg-blue-500 text-white font-semibold rounded-lg shadow-md hover:bg-blue-600 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors">Generate Report (0)</button>
-                </div>
+        <div id="fuel-form-container" class="bg-white p-6 rounded-lg shadow-md space-y-4">
+            
+            <div>
+                <label for="date" class="block text-sm font-medium text-gray-700">Date:</label>
+                <input type="date" id="date" name="date" class="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
             </div>
-             <div class="flex items-center p-4 border-b border-gray-200">
-                <div class="w-16 flex-shrink-0 text-center">
-                    <input type="checkbox" id="selectAllCheckbox" class="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500">
-                </div>
-                <div class="grid grid-cols-3 gap-4 w-full text-left text-xs font-bold text-gray-500 uppercase tracking-wider">
-                    <div class="pl-2">Date</div>
-                    <div>Apparatus</div>
-                    <div>Purchaser</div>
-                </div>
-                <div class="w-10 flex-shrink-0"></div>
-            </div>
-            <div id="data-container" class="divide-y divide-gray-200">
-                <div id="loadingState" class="text-center p-10">
-                    <div class="flex justify-center items-center gap-4">
-                        <div class="loader"></div>
-                        <span class="text-gray-500">Fetching data...</span>
-                    </div>
-                </div>
-                <div id="errorState" class="hidden text-center p-10">
-                    <p class="text-red-500 font-semibold">Could not fetch data.</p>
-                    <p class="text-gray-500">Please check the sheet URL or network connection.</p>
-                </div>
-                <div id="noResultsState" class="hidden text-center p-10">
-                    <p class="text-gray-500 font-semibold">No entries found matching your search.</p>
-                </div>
-            </div>
-        </main>
-    </div>
 
-    <!-- Image Modal -->
-    <div id="imageModal" class="fixed inset-0 bg-black bg-opacity-75 hidden items-center justify-center p-4 z-50 transition-opacity duration-300">
-        <div class="relative">
-            <img id="modalImage" src="" alt="Full-size Receipt" class="max-w-full max-h-screen rounded-lg shadow-xl">
-            <span id="closeModal" class="absolute -top-4 -right-4 text-white bg-gray-800 rounded-full h-10 w-10 flex items-center justify-center text-2xl font-bold cursor-pointer hover:bg-gray-600">&times;</span>
+            <div>
+                <label for="apparatus" class="block text-sm font-medium text-gray-700">Apparatus Fuel Purchased for:</label>
+                <select id="apparatus" name="apparatus" class="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                    <option>Ladder 58</option>
+                    <option>Medic 114</option>
+                    <option>Medic 124</option>
+                    <option>Medic 107</option>
+                    <option>Other Items</option>
+                </select>
+            </div>
+
+            <div id="fuel-fields">
+                <div>
+                    <label for="odometer" class="block text-sm font-medium text-gray-700">Odometer reading:</label>
+                    <input type="number" id="odometer" name="odometer" class="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
+                    <div>
+                        <label for="gallons" class="block text-sm font-medium text-gray-700">Gallons Purchased:</label>
+                        <input type="number" step="0.01" id="gallons" name="gallons" class="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                    </div>
+                    <div>
+                        <label for="price-per-gallon" class="block text-sm font-medium text-gray-700">Price per Gallon:</label>
+                        <div class="relative mt-1 rounded-md shadow-sm">
+                            <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3"><span class="text-gray-500 sm:text-sm">$</span></div>
+                            <input type="number" step="0.001" id="price-per-gallon" name="price-per-gallon" class="block w-full rounded-md border-gray-300 pl-7 p-2 focus:border-blue-500 focus:ring-blue-500">
+                        </div>
+                    </div>
+                    <div>
+                        <label for="fuel-amount" class="block text-sm font-medium text-gray-700">Fuel Amount:</label>
+                         <div class="relative mt-1 rounded-md shadow-sm">
+                            <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3"><span class="text-gray-500 sm:text-sm">$</span></div>
+                            <input type="number" step="0.01" id="fuel-amount" name="fuel-amount" class="block w-full rounded-md border-gray-300 pl-7 p-2 focus:border-blue-500 focus:ring-blue-500">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="border-t pt-4">
+                <h3 class="text-lg font-semibold text-gray-800">Other Items (If Applicable)</h3>
+            </div>
+
+            <div>
+                <label for="other-items" class="block text-sm font-medium text-gray-700">If items OTHER THAN fuel purchased:</label>
+                <input type="text" id="other-items" name="other-items" class="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" placeholder="(Ex.: Water, ice or gatorade)">
+            </div>
+            
+            <div>
+                <label for="reason-other-items" class="block text-sm font-medium text-gray-700">Reason other items purchased:</label>
+                <input type="text" id="reason-other-items" name="reason-other-items" class="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" placeholder="(Ex.: Fire scene rehab Supplies)">
+            </div>
+
+            <div>
+                <label for="other-items-amount" class="block text-sm font-medium text-gray-700">Other Items Amount:</label>
+                <div class="relative mt-1 rounded-md shadow-sm">
+                    <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3"><span class="text-gray-500 sm:text-sm">$</span></div>
+                    <input type="number" step="0.01" id="other-items-amount" name="other-items-amount" class="block w-full rounded-md border-gray-300 pl-7 p-2 focus:border-blue-500 focus:ring-blue-500">
+                </div>
+            </div>
+            
+            <div>
+                <label for="purchaser" class="block text-sm font-medium text-gray-700">Person purchasing Fuel/Other items:</label>
+                <select id="purchaser" name="purchaser" class="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                     <option>Loading...</option>
+                </select>
+            </div>
+
+            <div>
+                <label for="receipt" class="block text-sm font-medium text-gray-700">Attach Photo of Receipt:</label>
+                <input type="file" id="receipt" name="receipt" accept="image/*" class="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100">
+                <img id="receipt-preview" src="" alt="Receipt Preview" class="mt-2 rounded-md max-h-48 hidden"/>
+            </div>
+
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="text-center mt-6">
+            <button id="saveFuelEntryButton" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-6 rounded-lg shadow-lg transition duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                Save Entry
+            </button>
         </div>
     </div>
-    
-    <!-- Report Modal -->
-    <div id="reportModalContainer" class="fixed inset-0 bg-gray-800 bg-opacity-75 hidden items-center justify-center p-4 z-50">
-        <div id="reportModal" class="bg-white rounded-lg shadow-2xl p-8 max-w-4xl w-full max-h-full overflow-y-auto">
-            <div id="printHeader" class="flex justify-between items-center mb-6">
-                <h2 class="text-2xl font-bold">Report Preview</h2>
-                <div class="flex items-center gap-4">
-                     <button id="printButton" class="px-4 py-2 bg-green-500 text-white font-semibold rounded-lg hover:bg-green-600">Print</button>
-                    <span id="closeReportModal" class="text-gray-500 hover:text-gray-800 text-3xl cursor-pointer">&times;</span>
-                </div>
-            </div>
-            <div id="reportContent">
-                <!-- Report data will be injected here -->
-            </div>
-        </div>
-    </div>
 
-    <!-- This container is hidden on screen and only used for printing -->
-    <div id="print-container"></div>
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const sheetUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vS8i5O5lbbiGF6msd0SWGVgyGA1kj4MDIX_ztQ8XeMFRidWdJxk3XdZhl7WIgW88XPSS9TA-1Z0-8MG/pub?gid=1266031641&single=true&output=csv';
-            const dataContainer = document.getElementById('data-container');
-            const searchInput = document.getElementById('searchInput');
-            const monthFilter = document.getElementById('monthFilter');
-            const yearFilter = document.getElementById('yearFilter');
-            const entryCount = document.getElementById('entryCount');
-            const loadingState = document.getElementById('loadingState');
-            const errorState = document.getElementById('errorState');
-            const noResultsState = document.getElementById('noResultsState');
-            
-            const imageModal = document.getElementById('imageModal');
-            const modalImage = document.getElementById('modalImage');
-            const closeModal = document.getElementById('closeModal');
+        // --- Firebase Configuration ---
+        const firebaseConfig = {
+            apiKey: "AIzaSyA-4zB5WLhdpb6yhKEy6SZ2I5FS-ipgIBY",
+            authDomain: "stfd-fuel-form.firebaseapp.com",
+            projectId: "stfd-fuel-form",
+            storageBucket: "stfd-fuel-form.appspot.com",
+            messagingSenderId: "420570035631",
+            appId: "1:420570035631:web:5da57666c0d49d02d7eb5a",
+            measurementId: "G-VMRETXFSZB"
+        };
+        const appId = firebaseConfig.appId;
+        
+        let app, db;
+        try {
+             app = initializeApp(firebaseConfig);
+             db = getFirestore(app);
+        } catch(e) {
+            console.error("Firebase initialization error:", e);
+            alert("Error: Could not connect to the database.");
+        }
 
-            const generateReportBtn = document.getElementById('generateReportBtn');
-            const reportModalContainer = document.getElementById('reportModalContainer');
-            const closeReportModal = document.getElementById('closeReportModal');
-            const reportContent = document.getElementById('reportContent');
-            const printButton = document.getElementById('printButton');
-            const selectAllCheckbox = document.getElementById('selectAllCheckbox');
-            const printContainer = document.getElementById('print-container');
+        const dateInput = document.getElementById('date');
+        const today = new Date();
+        const year = today.getFullYear();
+        const month = String(today.getMonth() + 1).padStart(2, '0');
+        const day = String(today.getDate()).padStart(2, '0');
+        dateInput.value = `${year}-${month}-${day}`;
 
-            let allData = [];
-            let selectedEntries = new Set();
-
-            function formatAsCurrency(value, isPricePerGallon = false) {
-                if (value === null || value === undefined || String(value).trim() === '' || isNaN(Number(value))) {
-                    return value || 'N/A';
-                }
-                const number = parseFloat(value);
-                const options = {
-                    style: 'currency',
-                    currency: 'USD'
-                };
-                 if (isPricePerGallon) {
-                    options.minimumFractionDigits = 3;
-                    options.maximumFractionDigits = 3;
-                }
-                return number.toLocaleString('en-US', options);
+        const apparatusSelect = document.getElementById('apparatus');
+        const fuelFields = document.getElementById('fuel-fields');
+        apparatusSelect.addEventListener('change', () => {
+            if (apparatusSelect.value === 'Other Items') {
+                fuelFields.style.display = 'none';
+            } else {
+                fuelFields.style.display = 'block';
             }
+        });
 
-            async function fetchData() {
-                try {
-                    const response = await fetch(sheetUrl);
-                    if (!response.ok) throw new Error(`Network response was not ok: ${response.statusText}`);
-                    const csvText = await response.text();
-                    
-                    const lines = csvText.trim().split('\n');
-                    const headerLine = lines.shift();
-                    const headers = headerLine.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(h => h.trim().replace(/^"|"$/g, ''));
-                    
-                    const headerKeyMap = {};
-                    headers.forEach(header => {
-                        const key = header.replace(/(?:^\w|[A-Z]|\b\w)/g, (word, index) => {
-                            return index === 0 ? word.toLowerCase() : word.toUpperCase();
-                        }).replace(/\s+/g, '');
-                        headerKeyMap[header] = key;
-                    });
-
-                    const cleanValue = (val) => val && val.trim().replace(/^"|"$/g, '') || '';
-
-                    allData = lines.map((row, index) => {
-                        const values = row.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
-                        const entry = { id: index };
-                        headers.forEach((header, i) => {
-                            const key = headerKeyMap[header];
-                            entry[key] = cleanValue(values[i]);
-                        });
-                        return entry;
-                    });
-
-                    allData.sort((a, b) => new Date(b.date) - new Date(a.date));
-                    populateYearFilter();
-                    displayData(allData);
-                } catch (error) {
-                    console.error('Error fetching or parsing data:', error);
-                    loadingState.style.display = 'none';
-                    errorState.classList.remove('hidden');
-                }
+        const receiptInput = document.getElementById('receipt');
+        const receiptPreview = document.getElementById('receipt-preview');
+        receiptInput.addEventListener('change', (event) => {
+            const file = event.target.files[0];
+            if (file) {
+                receiptPreview.src = URL.createObjectURL(file);
+                receiptPreview.classList.remove('hidden');
+            } else {
+                receiptPreview.src = '';
+                receiptPreview.classList.add('hidden');
             }
-            
-            function populateYearFilter() {
-                const years = [...new Set(allData.map(entry => new Date(entry.date).getFullYear()))];
-                years.sort((a, b) => b - a); // Sort descending
-                yearFilter.innerHTML = '<option value="">All Years</option>'; // Reset
-                years.forEach(year => {
-                    if (!isNaN(year)) {
-                        const option = document.createElement('option');
-                        option.value = year;
-                        option.textContent = year;
-                        yearFilter.appendChild(option);
-                    }
-                });
-            }
+        });
 
-            function displayData(data) {
-                dataContainer.innerHTML = ''; 
-                 if (data.length === 0) {
-                    dataContainer.appendChild(allData.length > 0 ? noResultsState : loadingState);
-                    noResultsState.classList.toggle('hidden', allData.length === 0);
-                    loadingState.style.display = allData.length > 0 ? 'none' : 'block';
+        const getFuelCollection = () => {
+            if (!db) return null;
+            return collection(db, `artifacts/${appId}/public/data/fuel_entries`);
+        };
 
-                } else {
-                    noResultsState.classList.add('hidden');
-                    data.forEach(entry => {
-                        const entryWrapper = document.createElement('div');
-                        entryWrapper.className = 'border-b border-gray-200 last:border-b-0';
-
-                        // --- Summary Row ---
-                        const summaryRow = document.createElement('div');
-                        summaryRow.className = 'flex items-center p-4 hover:bg-gray-50 cursor-pointer';
-                        
-                        const checkboxContainer = document.createElement('div');
-                        checkboxContainer.className = 'w-16 flex-shrink-0 text-center';
-                        const checkbox = document.createElement('input');
-                        checkbox.type = 'checkbox';
-                        checkbox.className = 'h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500 row-checkbox';
-                        checkbox.dataset.id = entry.id;
-                        checkbox.checked = selectedEntries.has(entry.id);
-                        checkbox.onclick = (e) => e.stopPropagation(); // Prevent row click when clicking checkbox
-                        checkboxContainer.appendChild(checkbox);
-                        
-                        const summaryContent = document.createElement('div');
-                        summaryContent.className = 'grid grid-cols-3 gap-4 w-full text-sm text-gray-800';
-                        summaryContent.innerHTML = `
-                            <div class="font-medium text-gray-900 pl-2">${entry.date || 'N/A'}</div>
-                            <div>${entry.apparatus || 'N/A'}</div>
-                            <div>${entry.purchaser || 'N/A'}</div>
-                        `;
-
-                        const iconContainer = document.createElement('div');
-                        iconContainer.className = 'w-10 flex-shrink-0 text-center';
-                        iconContainer.innerHTML = `<svg class="w-5 h-5 text-gray-400 transition-transform duration-300" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" /></svg>`;
-
-                        summaryRow.append(checkboxContainer, summaryContent, iconContainer);
-                        
-                        // --- Details Container ---
-                        const detailsContainer = document.createElement('div');
-                        detailsContainer.className = 'details-container bg-gray-50';
-
-                        let receiptContent = '<p class="text-center text-gray-500 py-4">No Receipt Available</p>';
-                        if (entry.receipt && entry.receipt.startsWith('http')) {
-                            let originalUrl = entry.receipt;
-                            let fileId = null;
-                            
-                            if (originalUrl.includes('drive.google.com/file/d/')) {
-                                fileId = originalUrl.split('/d/')[1].split('/')[0];
-                            } else if (originalUrl.includes('drive.google.com/open?id=')) {
-                                fileId = originalUrl.split('id=')[1].split('&')[0];
-                            }
-
-                            if(fileId) {
-                                const proxy = 'https://corsproxy.io/?';
-                                const thumbnailUrl = `${proxy}https://drive.google.com/thumbnail?sz=w128-h128&id=${fileId}`;
-                                const fullImageUrl = `${proxy}https://drive.google.com/uc?export=view&id=${fileId}`;
-                                receiptContent = `<div class="w-40 h-24 bg-gray-200 rounded-md shadow-sm cursor-pointer hover:scale-105 transition-transform duration-200 overflow-hidden">
-                                    <img src="${thumbnailUrl}" alt="Receipt" class="w-full h-full object-cover">
-                                </div>`;
-
-                                // Attach click handler to the wrapper
-                                receiptContent = `<div onclick="event.stopPropagation(); showImageModal('${fullImageUrl}')">${receiptContent}</div>`;
-
-                            } else {
-                                receiptContent = `<p class="text-red-500">Invalid GDrive Link</p>`;
-                            }
-                        }
-
-                        detailsContainer.innerHTML = `
-                            <div class="p-6">
-                                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-x-8 gap-y-4 text-sm">
-                                    <div class="p-2"><strong class="font-semibold text-gray-600 block">Odometer:</strong> ${entry.odometer || 'N/A'}</div>
-                                    <div class="p-2"><strong class="font-semibold text-gray-600 block">Gallons Purchased:</strong> ${entry.gallonsPurchased || 'N/A'}</div>
-                                    <div class="p-2"><strong class="font-semibold text-gray-600 block">Fuel Amount:</strong> ${formatAsCurrency(entry.fuelAmount)}</div>
-                                    <div class="p-2"><strong class="font-semibold text-gray-600 block">Price per Gallon:</strong> ${formatAsCurrency(entry.pricePerGallon, true)}</div>
-                                    <div class="p-2"><strong class="font-semibold text-gray-600 block">Other Items Amount:</strong> ${formatAsCurrency(entry.otherItemsAmount)}</div>
-                                    <div class="p-2 sm:col-span-2 md:col-span-3"><strong class="font-semibold text-gray-600 block">Other Items:</strong> ${entry.otherItems || 'N/A'}</div>
-                                    <div class="p-2 sm:col-span-2 md:col-span-3"><strong class="font-semibold text-gray-600 block">Reason for Other Items:</strong> ${entry.reasonForOtherItems || 'N/A'}</div>
-                                    <div>
-                                        <strong class="font-semibold text-gray-600 block mb-2">Receipt:</strong>
-                                        ${receiptContent}
-                                    </div>
-                                </div>
-                            </div>
-                        `;
-                        
-                        summaryRow.addEventListener('click', () => {
-                            detailsContainer.classList.toggle('expanded');
-                            iconContainer.querySelector('svg').classList.toggle('rotate-180');
-                        });
-
-                        entryWrapper.append(summaryRow, detailsContainer);
-                        dataContainer.appendChild(entryWrapper);
-                    });
-                }
-                updateEntryCount(data.length);
-                updateReportButton();
-            }
-
-            window.showImageModal = (url) => {
-                modalImage.src = url;
-                imageModal.classList.remove('hidden');
-                imageModal.classList.add('flex');
-            }
-            
-            function updateEntryCount(count) {
-                entryCount.textContent = `Showing ${count} of ${allData.length} entries.`;
-            }
-
-            function updateReportButton() {
-                const count = selectedEntries.size;
-                generateReportBtn.textContent = `Generate Report (${count})`;
-                generateReportBtn.disabled = count === 0;
-            }
-
-            function applyFilters() {
-                const query = searchInput.value.toLowerCase();
-                const selectedMonth = monthFilter.value;
-                const selectedYear = yearFilter.value;
-
-                let filteredData = allData;
-
-                if (query) {
-                    filteredData = filteredData.filter(entry =>
-                        Object.values(entry).some(value =>
-                            String(value).toLowerCase().includes(query)
-                        )
-                    );
-                }
-
-                if (selectedMonth) {
-                    filteredData = filteredData.filter(entry => {
-                        const entryDate = new Date(entry.date);
-                        return entryDate.getMonth() == selectedMonth;
-                    });
-                }
-
-                if (selectedYear) {
-                    filteredData = filteredData.filter(entry => {
-                        const entryDate = new Date(entry.date);
-                        return entryDate.getFullYear() == selectedYear;
-                    });
-                }
-
-                displayData(filteredData);
-            }
-
-            function generateReport() {
-                const selectedData = allData.filter(entry => selectedEntries.has(entry.id));
-                let reportHTML = '';
-
-                selectedData.forEach((entry, index) => {
-                    const isFirstEntry = index === 0;
-                    const mainHeader = isFirstEntry ? `
-                        <div class="report-header text-center" style="margin-bottom: 1rem;">
-                            <h3 class="text-2xl font-bold">Springfield Township Fire & EMS</h3>
-                            <p class="text-sm text-gray-500">Generated on: ${new Date().toLocaleString()}</p>
-                        </div>` : '';
-
-                    let receiptContent = '<p class="text-center text-gray-500 mt-4 pt-4 border-t">No Receipt Available</p>';
-                    if (entry.receipt && entry.receipt.startsWith('http')) {
-                        let fileId = null;
-                        if (entry.receipt.includes('drive.google.com/file/d/')) {
-                            fileId = entry.receipt.split('/d/')[1].split('/')[0];
-                        } else if (entry.receipt.includes('drive.google.com/open?id=')) {
-                            fileId = entry.receipt.split('id=')[1].split('&')[0];
-                        }
-
-                        if(fileId) {
-                            const proxy = 'https://corsproxy.io/?';
-                            const thumbnailUrl = `${proxy}https://drive.google.com/thumbnail?sz=w800-h800&id=${fileId}`;
-                            receiptContent = `<div class="mt-4 pt-4 border-t">
-                                <h4 class="text-center font-semibold text-gray-700 mb-4">Receipt</h4>
-                                <div class="w-full flex justify-center">
-                                    <img src="${thumbnailUrl}" alt="Receipt" class="printable-receipt-image object-contain" onload="if(this.naturalHeight > this.naturalWidth) { this.classList.add('rotate-90'); }">
-                                </div>
-                            </div>`;
-                        } else {
-                            receiptContent = '<p class="text-center text-red-500 mt-4 pt-4 border-t">Invalid Receipt Link</p>';
-                        }
-                    }
-                    
-                    const entryTable = `
-                        <table class="w-full text-sm border-collapse" style="margin-bottom: 1rem;">
-                            <tbody>
-                                <tr><td class="font-semibold p-2 bg-gray-100 border w-1/3">Date:</td><td class="p-2 border">${entry.date || 'N/A'}</td></tr>
-                                <tr><td class="font-semibold p-2 bg-gray-100 border w-1/3">Apparatus:</td><td class="p-2 border">${entry.apparatus || 'N/A'}</td></tr>
-                                <tr><td class="font-semibold p-2 bg-gray-100 border w-1/3">Odometer:</td><td class="p-2 border">${entry.odometer || 'N/A'}</td></tr>
-                                <tr><td class="font-semibold p-2 bg-gray-100 border w-1/3">Gallons Purchased:</td><td class="p-2 border">${entry.gallonsPurchased || 'N/A'}</td></tr>
-                                <tr><td class="font-semibold p-2 bg-gray-100 border w-1/3">Fuel Amount:</td><td class="p-2 border">${formatAsCurrency(entry.fuelAmount)}</td></tr>
-                                <tr><td class="font-semibold p-2 bg-gray-100 border w-1/3">Price per Gallon:</td><td class="p-2 border">${formatAsCurrency(entry.pricePerGallon, true)}</td></tr>
-                                <tr><td class="font-semibold p-2 bg-gray-100 border w-1/3">Other Items:</td><td class="p-2 border">${entry.otherItems || 'N/A'}</td></tr>
-                                <tr><td class="font-semibold p-2 bg-gray-100 border w-1/3">Reason for Other Items:</td><td class="p-2 border">${entry.reasonForOtherItems || 'N/A'}</td></tr>
-                                <tr><td class="font-semibold p-2 bg-gray-100 border w-1/3">Other Items Amount:</td><td class="p-2 border">${formatAsCurrency(entry.otherItemsAmount)}</td></tr>
-                                <tr><td class="font-semibold p-2 bg-gray-100 border w-1/3">Purchaser:</td><td class="p-2 border">${entry.purchaser || 'N/A'}</td></tr>
-                            </tbody>
-                        </table>`;
-
-                    reportHTML += `<div class="print-entry">${mainHeader}${entryTable}${receiptContent}</div>`;
-                });
-                
-                reportContent.innerHTML = reportHTML;
-                printContainer.innerHTML = reportHTML; // Populate the hidden container for printing
-                reportModalContainer.classList.remove('hidden');
-                reportModalContainer.classList.add('flex');
-            }
-
-            const hideImageModal = () => {
-                imageModal.classList.add('hidden');
-                imageModal.classList.remove('flex');
-                modalImage.src = ''; 
+        const getFormData = () => {
+            const formData = {
+                createdAt: serverTimestamp()
             };
-            closeModal.addEventListener('click', hideImageModal);
-            imageModal.addEventListener('click', (e) => e.target === imageModal && hideImageModal());
-
-            const hideReportModal = () => {
-                reportModalContainer.classList.add('hidden');
-                reportModalContainer.classList.remove('flex');
-            };
-            closeReportModal.addEventListener('click', hideReportModal);
-            generateReportBtn.addEventListener('click', generateReport);
-            printButton.addEventListener('click', () => {
-                window.print();
-            });
-
-            dataContainer.addEventListener('change', (e) => {
-                if (e.target.classList.contains('row-checkbox')) {
-                    const id = parseInt(e.target.dataset.id);
-                    if (e.target.checked) {
-                        selectedEntries.add(id);
+            document.querySelectorAll('#fuel-form-container input, #fuel-form-container select').forEach(input => {
+                if (input.id && input.type !== 'file') {
+                    const isFuelField = fuelFields.contains(input);
+                    if (apparatusSelect.value === 'Other Items' && isFuelField) {
+                         // Don't add fuel fields if "Other Items" is selected
                     } else {
-                        selectedEntries.delete(id);
+                        formData[input.id] = input.value;
                     }
-                    updateReportButton();
                 }
             });
+            return formData;
+        };
+
+        const purchaserSelect = document.getElementById('purchaser');
+        const googleSheetUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRA3t8n-x-kjPbORC3JzajoQGHC5OUe5XDfVM_TDZfgIarvkoHC1bBaEDqk-sK0FbEKJWaDH_m_LjTM/pub?gid=750940377&single=true&output=csv';
+
+        // More robust CSV parsing
+        function parseCSV(text) {
+            const lines = text.trim().split('\n');
+            const headers = lines[0].split(',').map(h => h.trim().replace(/^"|"$/g, ''));
+            const memberIndex = headers.indexOf('Member');
+            if (memberIndex === -1) {
+                console.error("'Member' header not found in CSV");
+                return [];
+            }
+            return lines.slice(1).map(line => {
+                // This regex handles quoted fields with commas
+                const values = line.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
+                return values[memberIndex] ? values[memberIndex].trim().replace(/^"|"$/g, '') : null;
+            }).filter(Boolean); // Filter out any null/empty values
+        }
 
 
-            selectAllCheckbox.addEventListener('change', (e) => {
-                const isChecked = e.target.checked;
-                const visibleCheckboxes = dataContainer.querySelectorAll('.row-checkbox');
-                visibleCheckboxes.forEach(checkbox => {
-                    const id = parseInt(checkbox.dataset.id);
-                    checkbox.checked = isChecked;
-                    if (isChecked) selectedEntries.add(id);
-                    else selectedEntries.delete(id);
+        fetch(googleSheetUrl)
+            .then(response => response.text())
+            .then(data => {
+                const members = parseCSV(data);
+                purchaserSelect.innerHTML = '<option value="">Select Purchaser</option>';
+                members.forEach(member => {
+                    const option = document.createElement('option');
+                    option.value = member;
+                    option.textContent = member;
+                    purchaserSelect.appendChild(option);
                 });
-                updateReportButton();
+            })
+            .catch(error => {
+                console.error('Error fetching member list:', error);
+                purchaserSelect.innerHTML = '<option>Error loading names</option>';
             });
 
-            searchInput.addEventListener('input', applyFilters);
-            monthFilter.addEventListener('change', applyFilters);
-            yearFilter.addEventListener('change', applyFilters);
-            fetchData();
+        document.getElementById('saveFuelEntryButton').addEventListener('click', async () => {
+            const saveButton = document.getElementById('saveFuelEntryButton');
+            const collectionRef = getFuelCollection();
+            if (!collectionRef) {
+                alert("Cannot save: Database connection not available.");
+                return;
+            }
+            
+            const data = getFormData();
+
+            const isOtherItems = data.apparatus === 'Other Items';
+            
+            if (!data.date || !data.apparatus || !data.purchaser) {
+                alert("Please fill out Date, Apparatus, and Purchaser fields.");
+                return;
+            }
+            
+            if (!isOtherItems && (!data.odometer || !data.gallons || !data['price-per-gallon'] || !data['fuel-amount'])) {
+                alert("For vehicle entries, please fill out all fuel-related fields.");
+                return;
+            }
+
+            saveButton.disabled = true;
+            const receiptFile = document.getElementById('receipt').files[0];
+
+            try {
+                if (receiptFile) {
+                    saveButton.textContent = 'Uploading Receipt...';
+                    const imgbbApiKey = '949adce5e798adb043b40fb044ab1f96';
+                    const formData = new FormData();
+                    formData.append('image', receiptFile);
+
+                    const response = await fetch(`https://api.imgbb.com/1/upload?key=${imgbbApiKey}`, {
+                        method: 'POST',
+                        body: formData,
+                    });
+                    const result = await response.json();
+
+                    if(result.success) {
+                        data.receiptUrl = result.data.url;
+                    } else {
+                        throw new Error(result.error.message || 'Image upload failed');
+                    }
+                }
+
+                saveButton.textContent = 'Saving Entry...';
+                await addDoc(collectionRef, data);
+                alert('Fuel entry saved successfully!');
+                window.location.reload();
+            } catch (error) {
+                console.error("Error writing document: ", error);
+                alert("Error saving entry: " + error.message);
+            } finally {
+                saveButton.disabled = false;
+                saveButton.textContent = 'Save Entry';
+            }
         });
     </script>
 </body>
 </html>
+
