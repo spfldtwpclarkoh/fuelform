@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Fuel Purchase Form</title>
+    <title>STFD Fuel Purchase Form</title>
     <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
     <link rel="icon" type="image/png" sizes="16x16" href="favicon-16x16.png">
     <script src="https://cdn.tailwindcss.com"></script>
@@ -30,26 +30,7 @@
             <div>
                 <label for="apparatus" class="block text-sm font-medium text-gray-700">Apparatus Fuel Purchased for:</label>
                 <select id="apparatus" name="apparatus" class="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
-                    <option value="Medic 114">Medic 114</option>
-                    <option value="Medic 124">Medic 124</option>
-                    <option value="Medic 107">Medic 107</option>
-                    <option value="Medic 122">Medic 122</option>
-                    <option value="Medic 101">Medic 101</option>
-                    <option value="Ladder 58">Ladder 58</option>
-                    <option value="Engine 58">Engine 58</option>
-                    <option value="Brush 58">Brush 58</option>
-                    <option value="ATV 58">ATV 58</option>
-                    <option value="Utility 58">Utility 58</option>
-                    <option value="Engine 72">Engine 72</option>
-                    <option value="Rescue 72">Rescue 72</option>
-                    <option value="Tanker 72">Tanker 72</option>
-                    <option value="Brush 72">Brush 72</option>
-                    <option value="Engine 56">Engine 56</option>
-                    <option value="Tanker 56">Tanker 56</option>
-                    <option value="72 Fuel Cans">72 Fuel Cans</option>
-                    <option value="58 Fuel Cans">58 Fuel Cans</option>
-                    <option value="56 Fuel Cans">56 Fuel Cans</option>
-                    <option value="Other Items">Other Items</option>
+                    <option>Loading...</option>
                 </select>
             </div>
 
@@ -203,30 +184,62 @@
             return formData;
         };
 
-        const purchaserSelect = document.getElementById('purchaser');
-        const googleSheetUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRA3t8n-x-kjPbORC3JzajoQGHC5OUe5XDfVM_TDZfgIarvkoHC1bBaEDqk-sK0FbEKJWaDH_m_LjTM/pub?gid=750940377&single=true&output=csv';
+        // --- Fetch Dropdown Options from Google Sheets ---
+        
+        // Fetch Apparatus List
+        const apparatusSheetUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRA3t8n-x-kjPbORC3JzajoQGHC5OUe5XDfVM_TDZfgIarvkoHC1bBaEDqk-sK0FbEKJWaDH_m_LjTM/pub?gid=0&single=true&output=csv';
 
-        // More robust CSV parsing
-        function parseCSV(text) {
+        function parseCsvByHeader(text, headerName) {
             const lines = text.trim().split('\n');
             const headers = lines[0].split(',').map(h => h.trim().replace(/^"|"$/g, ''));
-            const memberIndex = headers.indexOf('Member');
-            if (memberIndex === -1) {
-                console.error("'Member' header not found in CSV");
+            const colIndex = headers.indexOf(headerName);
+            if (colIndex === -1) {
+                console.error(`'${headerName}' header not found in CSV`);
                 return [];
             }
             return lines.slice(1).map(line => {
-                // This regex handles quoted fields with commas
                 const values = line.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
-                return values[memberIndex] ? values[memberIndex].trim().replace(/^"|"$/g, '') : null;
+                return values[colIndex] ? values[colIndex].trim().replace(/^"|"$/g, '') : null;
             }).filter(Boolean); // Filter out any null/empty values
         }
 
-
-        fetch(googleSheetUrl)
-            .then(response => response.text())
+        fetch(apparatusSheetUrl)
+            .then(response => {
+                if (!response.ok) throw new Error("Network response was not ok");
+                return response.text();
+            })
             .then(data => {
-                const members = parseCSV(data);
+                const units = parseCsvByHeader(data, 'Unit');
+                apparatusSelect.innerHTML = '<option value="">Select Apparatus</option>';
+                units.forEach(unit => {
+                    const option = document.createElement('option');
+                    option.value = unit;
+                    option.textContent = unit;
+                    apparatusSelect.appendChild(option);
+                });
+                // Add "Other Items" as a permanent option
+                const otherOption = document.createElement('option');
+                otherOption.value = 'Other Items';
+                otherOption.textContent = 'OTHER ITEMS';
+                apparatusSelect.appendChild(otherOption);
+            })
+            .catch(error => {
+                console.error('Error fetching apparatus list:', error);
+                apparatusSelect.innerHTML = '<option>Error loading apparatus list</option>';
+            });
+
+
+        // Fetch Purchaser List
+        const purchaserSelect = document.getElementById('purchaser');
+        const purchaserSheetUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRA3t8n-x-kjPbORC3JzajoQGHC5OUe5XDfVM_TDZfgIarvkoHC1bBaEDqk-sK0FbEKJWaDH_m_LjTM/pub?gid=750940377&single=true&output=csv';
+        
+        fetch(purchaserSheetUrl)
+            .then(response => {
+                if (!response.ok) throw new Error("Network response was not ok");
+                return response.text();
+             })
+            .then(data => {
+                const members = parseCsvByHeader(data, 'Member');
                 purchaserSelect.innerHTML = '<option value="">Select Purchaser</option>';
                 members.forEach(member => {
                     const option = document.createElement('option');
@@ -300,4 +313,3 @@
     </script>
 </body>
 </html>
-
